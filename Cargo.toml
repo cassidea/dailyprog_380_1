@@ -1,0 +1,7 @@
+[package]
+name = "challenge380-morse1"
+version = "0.1.0"
+authors = ["cassidea <cassidea@mailbox.org>"]
+edition = "2018"
+
+[dependencies]
