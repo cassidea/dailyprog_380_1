@@ -13,3 +13,8 @@ fn read_tokens(input_file: &str) -> Result<Box<Vec<String>>, io::Error> {
     let result = input.lines().map(|x| String::from(x.trim())).collect();
     Ok(Box::new(result))
 }
+
+#[test]
+fn helloWorld() {
+    println!("Hello Gitlab CI")
+}
