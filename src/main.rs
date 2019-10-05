@@ -16,5 +16,6 @@ fn read_tokens(input_file: &str) -> Result<Vec<String>, io::Error> {
 
 #[test]
 fn hello_world() {
-    println!("Hello Gitlab CI")
+    println!("Hello Gitlab CI");
+    assert!(false)
 }
