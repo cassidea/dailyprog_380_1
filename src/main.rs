@@ -7,11 +7,11 @@ fn main() {
     println!("Number of tokens {}", tokens.len());
 }
 
-fn read_tokens(input_file: &str) -> Result<Box<Vec<String>>, io::Error> {
+fn read_tokens(input_file: &str) -> Result<Vec<String>, io::Error> {
     println!("Opening file");
     let input = fs::read_to_string(input_file)?;
     let result = input.lines().map(|x| String::from(x.trim())).collect();
-    Ok(Box::new(result))
+    Ok(result)
 }
 
 #[test]
