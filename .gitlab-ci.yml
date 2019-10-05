@@ -11,7 +11,7 @@ cache:
   script:
     - rustc --version && cargo --version
     - cargo build
-    - cargo test --verbose
+    - cargo test --verbose -- --nocapture
 
 # Set any required environment variables here
 variables:
