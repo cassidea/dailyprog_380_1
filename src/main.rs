@@ -28,14 +28,30 @@ fn main() {
             acc
         });
 
-    let morsed = map.get(&String::from("aah")).unwrap();
-    println!("{}", morsed);
-    let unmorsed = reversed_map.get(&morsed).unwrap();
-
-    println!("Reversed result {} : {:?}", morsed, unmorsed);
+    match challenge1(&reversed_map) {
+        None => println!("Nothing found for challenge1"),
+        Some(morse) => println!(
+            "Found {} for challenge1: {:?}",
+            morse,
+            reversed_map.get(morse).unwrap()
+        ),
+    };
 }
 
-fn challenge1() {}
+//The sequence -...-....-.--. is the code for four different words (needing, nervate, niding, tiling).
+// Find the only sequence that's the code for 13 different words.
+fn challenge1<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Option<&'a &'a String> {
+    let result = map
+        .iter()
+        .filter(|e| e.1.len() == 13)
+        .map(|e| e.0)
+        .collect::<Vec<_>>();
+
+    if result.len() > 1 {
+        println!("More than one result? {:?}", result);
+    }
+    result.get(0).cloned()
+}
 
 fn read_tokens(file: &str) -> Result<Vec<String>, io::Error> {
     println!("Opening file");
