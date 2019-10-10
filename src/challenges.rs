@@ -53,6 +53,52 @@ fn find_dashes_in_a_row<'a>(
     None
 }
 
+//Call a word perfectly balanced if its code has the same number of dots as dashes.
+// counterdemonstrations is one of two 21-letter words that's perfectly balanced. Find the other one.
+pub fn challenge3<'a>(map: &'a HashMap<&String, String>) -> Option<(&'a &'a String, &'a String)> {
+    let result = find_balanced_words(&map, 21);
+    match result.len() {
+        2 => {
+            if **(result.get(0).unwrap().0) == String::from("counterdemonstrations") {
+                result.get(1).cloned()
+            } else {
+                result.get(0).cloned()
+            }
+        }
+        length => {
+            println!("Got {} results! Returning nothing! ", length);
+            None
+        }
+    }
+}
+
+fn find_balanced_words<'a>(
+    map: &'a HashMap<&String, String>,
+    limit: usize,
+) -> Vec<(&'a &'a String, &'a String)> {
+    let mut result = Vec::<(&&String, &String)>::new();
+    for (w, m) in map {
+        if w.len() != limit {
+            continue;
+        }
+
+        let mut dashes = 0;
+        let mut dots = 0;
+        for c in m.chars() {
+            match c {
+                '.' => dots += 1,
+                '-' => dashes += 1,
+                _ => panic!("Unknown char {}", c),
+            };
+        }
+
+        if dots == dashes {
+            result.push((&w, &m));
+        }
+    }
+    result
+}
+
 #[test]
 fn find_by_length_test() {
     let mut map = HashMap::new();
@@ -84,5 +130,28 @@ fn find_dashes_in_a_row_test() {
     match find_dashes_in_a_row(&map, 3) {
         None => panic!("Did not find '---'"),
         Some(morse) => assert_eq!(dashes, **morse),
+    };
+}
+
+#[test]
+fn find_balanced_words_test() {
+    let mut map = HashMap::new();
+    let w1 = String::from("a");
+    let m1 = String::from(".-");
+    let w2 = String::from("aa");
+    let m2 = String::from(".-.-");
+    let w3 = String::from("ee");
+    let m3 = String::from("..");
+    map.insert(&w1, m1);
+    map.insert(&w2, m2);
+    map.insert(&w3, m3);
+
+    let result = find_balanced_words(&map, 2);
+    match result.len() {
+        1 => match result.get(0) {
+            None => panic!("No result found!"),
+            Some((w, _)) => assert_eq!(w2, ***w),
+        },
+        l => panic!("Wrong number {} of results!", l),
     };
 }

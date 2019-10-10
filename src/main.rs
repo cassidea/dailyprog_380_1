@@ -30,21 +30,26 @@ fn main() {
         });
 
     match challenges::challenge1(&reversed_map) {
-        None => println!("Nothing found for challenge1"),
+        None => println!("Nothing found for challenge 1"),
         Some(morse) => println!(
-            "Found {} for challenge1: {:?}",
+            "Found {} -> {:?} for challenge 1",
             morse,
             reversed_map.get(morse).unwrap()
         ),
     };
 
     match challenges::challenge2(&reversed_map) {
-        None => println!("Nothing found for challenge2"),
+        None => println!("Nothing found for challenge 2"),
         Some(morse) => println!(
-            "Found {} - {:?} for challenge 2",
+            "Found {} -> {:?} for challenge 2",
             morse,
             reversed_map.get(morse).unwrap()
         ),
+    };
+
+    match challenges::challenge3(&map) {
+        None => println!("Nothing found for challenge 3"),
+        Some((word, morse)) => println!("Found {} -> {} for challenge 3", word, morse),
     };
 }
 
