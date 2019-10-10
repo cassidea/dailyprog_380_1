@@ -42,7 +42,7 @@ pub fn to_morse(org_string: &str) -> String {
         .join("")
 }
 
-pub fn to_single_morse<'a>(c: char) -> &'a str {
+fn to_single_morse<'a>(c: char) -> &'a str {
     MAP.get(&c).unwrap()
 }
 
