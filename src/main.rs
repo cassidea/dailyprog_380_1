@@ -18,30 +18,30 @@ fn main() {
 
     let map = tokens
         .iter()
-        .cloned()
         .zip(tokens.iter().map(|w| morse::to_morse(w)))
-        .collect::<HashMap<String, String>>();
+        .collect::<HashMap<&String, String>>();
 
     let reversed_map = map
         .iter()
-        .fold(HashMap::<String, Vec<String>>::new(), |mut acc, x| {
-            acc.entry(x.1.clone())
-                .or_insert(Vec::new())
-                .push(x.0.clone());
+        .fold(HashMap::<&String, Vec<&String>>::new(), |mut acc, x| {
+            acc.entry(x.1).or_insert(Vec::new()).push(x.0);
             acc
         });
 
-    let morsed = map.get("aah").unwrap();
+    let morsed = map.get(&String::from("aah")).unwrap();
     println!("{}", morsed);
-    let unmorsed = reversed_map.get(morsed).unwrap();
+    let unmorsed = reversed_map.get(&morsed).unwrap();
 
     println!("Reversed result {} : {:?}", morsed, unmorsed);
 }
+
+fn challenge1() {}
 
 fn read_tokens(file: &str) -> Result<Vec<String>, io::Error> {
     println!("Opening file");
     let input = fs::read_to_string(file)?;
     let result = input.lines().map(|x| String::from(x.trim())).collect();
+    println!("Done reading file");
     Ok(result)
 }
 
