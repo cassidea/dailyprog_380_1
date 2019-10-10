@@ -36,6 +36,15 @@ fn main() {
             reversed_map.get(morse).unwrap()
         ),
     };
+
+    match challenge2(&reversed_map, 15) {
+        None => println!("Nothing found for challenge2"),
+        Some(morse) => println!(
+            "Found {} - {:?} for challenge 2",
+            morse,
+            reversed_map.get(morse).unwrap()
+        ),
+    };
 }
 
 //The sequence -...-....-.--. is the code for four different words (needing, nervate, niding, tiling).
@@ -51,6 +60,32 @@ fn challenge1<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Option<&'a &'a Str
         println!("More than one result? {:?}", result);
     }
     result.get(0).cloned()
+}
+
+//autotomous encodes to .-..--------------..-..., which has 14 dashes in a row.
+// Find the only word that has 15 dashes in a row.
+fn challenge2<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: usize) -> Option<&'a &'a String> {
+    for k in map.keys() {
+        if k.len() < limit {
+            continue;
+        };
+        let mut counter = 0;
+        for (i, c) in k.chars().enumerate() {
+            if c == '.' {
+                if k.len() - i <= limit {
+                    break;
+                } else {
+                    counter = 0;
+                    continue;
+                }
+            }
+            counter += 1;
+        }
+        if counter == limit {
+            return Some(k);
+        }
+    }
+    None
 }
 
 fn read_tokens(file: &str) -> Result<Vec<String>, io::Error> {
@@ -79,4 +114,17 @@ fn read_tokens_test() {
 #[test]
 fn to_morse_main_test() {
     assert_eq!(morse::to_morse("abc"), ".--...-.-.");
+}
+
+#[test]
+fn challenge2_test() {
+    let mut map = HashMap::new();
+    let dashes = String::from("..---");
+    let dots = String::from("--...");
+    map.insert(&dashes, Vec::<&String>::new());
+    map.insert(&dots, Vec::<&String>::new());
+    match challenge2(&map, 3) {
+        None => panic!("Did not find '---'"),
+        Some(morse) => assert_eq!(dashes, **morse),
+    };
 }
