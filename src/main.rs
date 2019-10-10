@@ -2,6 +2,7 @@
 extern crate lazy_static;
 mod morse;
 
+use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::path;
@@ -15,11 +16,26 @@ fn main() {
     let tokens = read_tokens(INPUT_FILE).unwrap();
     println!("Number of tokens {}", tokens.len());
 
-    println!(
-        "3.element '{}' in morse '{}'",
-        tokens.get(3).unwrap(),
-        morse::to_morse(tokens.get(3).unwrap())
-    )
+    let map = tokens
+        .iter()
+        .cloned()
+        .zip(tokens.iter().map(|w| morse::to_morse(w)))
+        .collect::<HashMap<String, String>>();
+
+    let reversed_map = map
+        .iter()
+        .fold(HashMap::<String, Vec<String>>::new(), |mut acc, x| {
+            acc.entry(x.1.clone())
+                .or_insert(Vec::new())
+                .push(x.0.clone());
+            acc
+        });
+
+    let morsed = map.get("aah").unwrap();
+    println!("{}", morsed);
+    let unmorsed = reversed_map.get(morsed).unwrap();
+
+    println!("Reversed result {} : {:?}", morsed, unmorsed);
 }
 
 fn read_tokens(file: &str) -> Result<Vec<String>, io::Error> {
