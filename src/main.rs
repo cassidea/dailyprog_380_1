@@ -1,3 +1,7 @@
+#[macro_use]
+extern crate lazy_static;
+mod morse;
+
 use std::fs;
 use std::io;
 use std::path;
@@ -10,6 +14,12 @@ fn main() {
     }
     let tokens = read_tokens(INPUT_FILE).unwrap();
     println!("Number of tokens {}", tokens.len());
+
+    println!(
+        "3.element '{}' in morse '{}'",
+        tokens.get(3).unwrap(),
+        morse::to_morse(tokens.get(3).unwrap())
+    )
 }
 
 fn read_tokens(file: &str) -> Result<Vec<String>, io::Error> {
@@ -32,4 +42,9 @@ fn read_tokens_test() {
         172823,
         "Number of tokens differ!"
     );
+}
+
+#[test]
+fn to_morse_main_test() {
+    assert_eq!(morse::to_morse("abc"), ".--...-.-.");
 }
