@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-//The sequence -...-....-.--. is the code for four different words (needing, nervate, niding, tiling).
+// The sequence -...-....-.--. is the code for four different words (needing, nervate, niding, tiling).
 // Find the only sequence that's the code for 13 different words.
 pub fn challenge1<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Option<&'a &'a String> {
     let result = find_by_length(map, 13);
@@ -20,7 +20,7 @@ fn find_by_length<'a>(
         .collect::<Vec<_>>()
 }
 
-//autotomous encodes to .-..--------------..-..., which has 14 dashes in a row.
+// autotomous encodes to .-..--------------..-..., which has 14 dashes in a row.
 // Find the only word that has 15 dashes in a row.
 pub fn challenge2<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Option<&'a &'a String> {
     find_dashes_in_a_row(map, 15)
@@ -53,13 +53,13 @@ fn find_dashes_in_a_row<'a>(
     None
 }
 
-//Call a word perfectly balanced if its code has the same number of dots as dashes.
+// Call a word perfectly balanced if its code has the same number of dots as dashes.
 // counterdemonstrations is one of two 21-letter words that's perfectly balanced. Find the other one.
-pub fn challenge3<'a>(map: &'a HashMap<&String, String>) -> Option<(&'a &'a String, &'a String)> {
-    let result = find_balanced_words(&map, 21);
+pub fn challenge3<'a>(map: &'a HashMap<&String, String>) -> Option<(&'a String, &'a String)> {
+    let result = find_balanced_words(map, 21);
     match result.len() {
         2 => {
-            if **(result.get(0).unwrap().0) == String::from("counterdemonstrations") {
+            if *(result.get(0).unwrap().0) == String::from("counterdemonstrations") {
                 result.get(1).cloned()
             } else {
                 result.get(0).cloned()
@@ -75,8 +75,8 @@ pub fn challenge3<'a>(map: &'a HashMap<&String, String>) -> Option<(&'a &'a Stri
 fn find_balanced_words<'a>(
     map: &'a HashMap<&String, String>,
     limit: usize,
-) -> Vec<(&'a &'a String, &'a String)> {
-    let mut result = Vec::<(&&String, &String)>::new();
+) -> Vec<(&'a String, &'a String)> {
+    let mut result = Vec::<(&String, &String)>::new();
     for (w, m) in map {
         if w.len() != limit {
             continue;
