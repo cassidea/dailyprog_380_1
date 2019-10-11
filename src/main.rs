@@ -3,6 +3,7 @@ extern crate lazy_static;
 mod challenges;
 mod morse;
 
+use crate::challenges::challenge4;
 use std::collections::HashMap;
 use std::fs;
 use std::io;
@@ -50,6 +51,11 @@ fn main() {
     match challenges::challenge3(&map) {
         None => println!("Nothing found for challenge 3"),
         Some((word, morse)) => println!("Found {} -> {} for challenge 3", word, morse),
+    };
+
+    match challenge4(&map) {
+        None => println!("Nothing found for challenge 4"),
+        Some((word, morse)) => println!("Found {} -> {} for challenge 4", word, morse),
     };
 }
 

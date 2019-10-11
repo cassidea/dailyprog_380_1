@@ -99,6 +99,40 @@ fn find_balanced_words<'a>(
     result
 }
 
+// protectorate is 12 letters long and encodes to .--..-.----.-.-.----.-..--., which is a
+// palindrome (i.e. the string is the same when reversed). Find the only 13-letter word that
+// encodes to a palindrome.
+pub fn challenge4<'a>(map: &'a HashMap<&String, String>) -> Option<(&'a String, &'a String)> {
+    let result = find_palindrome(map, 13);
+    match result.len() {
+        1 => Some(*result.get(0).unwrap()),
+        l => {
+            println!("Found {} results! Returning None!", l);
+            None
+        }
+    }
+}
+
+fn find_palindrome<'a>(
+    map: &'a HashMap<&String, String>,
+    limit: usize,
+) -> Vec<(&'a String, &'a String)> {
+    let mut result = Vec::new();
+
+    'words: for (w, m) in map {
+        if w.len() != limit {
+            continue;
+        }
+        for (i, r) in m.chars().zip(m.chars().rev()) {
+            if i != r {
+                continue 'words;
+            }
+        }
+        result.push((*w, m));
+    }
+    result
+}
+
 #[test]
 fn find_by_length_test() {
     let mut map = HashMap::new();
@@ -148,10 +182,27 @@ fn find_balanced_words_test() {
 
     let result = find_balanced_words(&map, 2);
     match result.len() {
-        1 => match result.get(0) {
-            None => panic!("No result found!"),
-            Some((w, _)) => assert_eq!(w2, ***w),
-        },
+        1 => assert_eq!(w2, **result.get(0).unwrap().0),
         l => panic!("Wrong number {} of results!", l),
-    };
+    }
+}
+
+#[test]
+fn find_palindrome_test() {
+    let mut map = HashMap::new();
+    let w1 = String::from("a");
+    let m1 = String::from(".-");
+    let w2 = String::from("aa");
+    let m2 = String::from(".-.-");
+    let w3 = String::from("eee");
+    let m3 = String::from("...");
+    map.insert(&w1, m1);
+    map.insert(&w2, m2);
+    map.insert(&w3, m3);
+
+    let result = find_palindrome(&map, 3);
+    match result.len() {
+        1 => assert_eq!(w3, *result.get(0).unwrap().0),
+        l => panic!("Wrong number {} of results!", l),
+    }
 }
