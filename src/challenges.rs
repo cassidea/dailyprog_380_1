@@ -133,6 +133,52 @@ fn find_palindrome<'a>(
     result
 }
 
+// --.---.---.-- is one of five 13-character sequences that does not appear in the encoding
+// of any word. Find the other four.
+pub fn challenge5<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
+    find_missing_morse(map, 13)
+}
+
+fn find_missing_morse<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) -> Vec<String> {
+    let perms = get_permutations(limit, vec!["--.---.---.--".to_string()]);
+    println!("Got {} permutations", perms.len());
+    let mut result = perms.clone();
+
+    let keys = map
+        .keys()
+        .filter(|k| k.len() >= limit as usize)
+        .collect::<Vec<_>>();
+    println!("Found {} keys to check", keys.len());
+    for (i, p) in perms.iter().enumerate().rev() {
+        for k in keys.iter() {
+            if k.contains(p) {
+                result.remove(i);
+                break;
+            }
+        }
+    }
+    result
+}
+
+fn get_permutations(limit: u32, to_be_ignored: Vec<String>) -> Vec<String> {
+    let mut result = Vec::<String>::new();
+    for i in 0..2_u32.pow(limit) {
+        let s_i = format!("{:width$b}", i, width = limit as usize);
+        let morse = s_i
+            .chars()
+            .map(|c| match c {
+                '0' | ' ' => '.',
+                '1' => '-',
+                x => panic!("Unknown char {}!", x),
+            })
+            .collect::<String>();
+        if !to_be_ignored.contains(&morse) {
+            result.push(morse);
+        }
+    }
+    result
+}
+
 #[test]
 fn find_by_length_test() {
     let mut map = HashMap::new();
@@ -205,4 +251,64 @@ fn find_palindrome_test() {
         1 => assert_eq!(w3, *result.get(0).unwrap().0),
         l => panic!("Wrong number {} of results!", l),
     }
+}
+
+#[test]
+fn get_permutations_test() {
+    let limit: u32 = 3;
+    let total: u32 = 2_u32.pow(limit);
+
+    let test_perms = ["...", "-..", ".-.", "..-", "--.", "-.-", ".--", "---"];
+    assert_eq!(total as usize, test_perms.len());
+
+    let perms = get_permutations(limit, Vec::<String>::new());
+    for p in test_perms.iter() {
+        assert!(
+            perms.contains(&p.to_string()),
+            "'{}' is missing in {:?}",
+            p,
+            perms
+        );
+    }
+}
+
+#[test]
+fn get_permutations_test2() {
+    let limit: u32 = 13;
+    let total: u32 = 2_u32.pow(limit);
+
+    let perms = get_permutations(limit, Vec::<String>::new());
+    assert_eq!(total as usize, perms.len());
+}
+
+#[test]
+fn find_missing_morse_test() {
+    let test_perms = [
+        String::from("-..--"),
+        String::from(".-.--"),
+        String::from("..--."),
+        String::from("--.--"),
+        String::from("-.-.."),
+        String::from(".--.."),
+    ];
+    let mut map = HashMap::new();
+    for p in test_perms.iter() {
+        map.insert(p, Vec::<&String>::new());
+    }
+
+    let missing_perms = find_missing_morse(&map, 3);
+    assert!(
+        missing_perms.contains(&String::from("...")),
+        "'...' is found?"
+    );
+    assert!(
+        missing_perms.contains(&String::from("---")),
+        "'---' is found?"
+    );
+    assert_eq!(
+        2,
+        missing_perms.len(),
+        "More elements than expected {}",
+        missing_perms.len()
+    );
 }

@@ -3,7 +3,7 @@ extern crate lazy_static;
 mod challenges;
 mod morse;
 
-use crate::challenges::challenge4;
+use crate::challenges::{challenge4, challenge5};
 use std::collections::HashMap;
 use std::fs;
 use std::io;
@@ -57,6 +57,13 @@ fn main() {
         None => println!("Nothing found for challenge 4"),
         Some((word, morse)) => println!("Found {} -> {} for challenge 4", word, morse),
     };
+
+    let c5 = challenge5(&reversed_map);
+    if c5.len() == 4 {
+        println!("Missing sequences for challenge 5 are: {:?}", c5);
+    } else {
+        println!("Found {} missing sequences", c5.len());
+    }
 }
 
 fn read_tokens(file: &str) -> Result<Vec<String>, io::Error> {
