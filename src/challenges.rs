@@ -136,10 +136,10 @@ fn find_palindrome<'a>(
 // --.---.---.-- is one of five 13-character sequences that does not appear in the encoding
 // of any word. Find the other four.
 pub fn challenge5<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
-    find_missing_morse(map, 13)
+    find_missing_morse2(map, 13)
 }
 
-fn find_missing_morse<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) -> Vec<String> {
+fn find_missing_morse1<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) -> Vec<String> {
     let perms = get_permutations(limit, vec!["--.---.---.--".to_string()]);
     println!("Got {} permutations", perms.len());
     let mut result = perms.clone();
@@ -155,6 +155,39 @@ fn find_missing_morse<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) -
                 result.remove(i);
                 break;
             }
+        }
+    }
+    result
+}
+
+fn find_missing_morse2<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) -> Vec<String> {
+    let mut perms = get_permutations(limit, vec!["--.---.---.--".to_string()]);
+
+    perms.retain(|p| {
+        for k in map.keys() {
+            if k.contains(p) {
+                return false;
+            }
+        }
+        true
+    });
+    perms
+}
+
+fn find_missing_morse3<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) -> Vec<String> {
+    let perms = get_permutations(limit, vec!["--.---.---.--".to_string()]);
+    let mut result = Vec::<String>::new();
+
+    for p in perms.iter() {
+        let mut found = false;
+        for k in map.keys() {
+            if k.contains(p) {
+                found = true;
+                break;
+            }
+        }
+        if !found {
+            result.push(p.clone());
         }
     }
     result
@@ -296,7 +329,7 @@ fn find_missing_morse_test() {
         map.insert(p, Vec::<&String>::new());
     }
 
-    let missing_perms = find_missing_morse(&map, 3);
+    let missing_perms = find_missing_morse_fast(&map, 3);
     assert!(
         missing_perms.contains(&String::from("...")),
         "'...' is found?"
@@ -308,7 +341,7 @@ fn find_missing_morse_test() {
     assert_eq!(
         2,
         missing_perms.len(),
-        "More elements than expected {}",
-        missing_perms.len()
+        "More elements than expected {:?}",
+        missing_perms
     );
 }
