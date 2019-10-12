@@ -90,7 +90,12 @@ fn main() {
     if c5.len() == 4 {
         println!("Missing sequences for challenge 5 are: {:?}", c5);
     } else {
-        println!("Found {} missing sequences", c5.len());
+        println!("Found {} missing sequences e.g. {:?}", c5.len(), c5);
+        for k in reversed_map.keys() {
+            if k.contains("-.---.------.") {
+                println!("{} has not been found!", k);
+            }
+        }
     }
     println!("Challenge 5 took {:?}", start_challenge5.elapsed());
 

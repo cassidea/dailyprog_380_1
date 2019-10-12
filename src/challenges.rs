@@ -139,6 +139,7 @@ pub fn challenge5<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
     find_missing_morse2(map, 13)
 }
 
+#[allow(dead_code)]
 fn find_missing_morse1<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) -> Vec<String> {
     let perms = get_permutations(limit, vec!["--.---.---.--".to_string()]);
     println!("Got {} permutations", perms.len());
@@ -165,7 +166,7 @@ fn find_missing_morse2<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) 
 
     perms.retain(|p| {
         for k in map.keys() {
-            if k.contains(p) {
+            if contains(k, p) {
                 return false;
             }
         }
@@ -174,6 +175,7 @@ fn find_missing_morse2<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) 
     perms
 }
 
+#[allow(dead_code)]
 fn find_missing_morse3<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) -> Vec<String> {
     let perms = get_permutations(limit, vec!["--.---.---.--".to_string()]);
     let mut result = Vec::<String>::new();
@@ -210,6 +212,86 @@ fn get_permutations(limit: u32, to_be_ignored: Vec<String>) -> Vec<String> {
         }
     }
     result
+}
+
+fn contains(haystack: &str, needle: &str) -> bool {
+    #[cfg(test)]
+    println!("Searching {} in {}", needle, haystack);
+
+    if needle.len() == 0 {
+        return true;
+    }
+
+    if haystack.len() == 0 {
+        return false;
+    }
+
+    let mut h_i = 0;
+    let mut h;
+    'haystack: loop {
+        match haystack.get(h_i..h_i + 1) {
+            Some(x) => (h = x),
+            None => return false,
+        };
+
+        #[cfg(test)]
+        println!("haystack beginning: h: {}, h_i {}", h, h_i);
+        let mut n_i = 0;
+        'needle: loop {
+            #[cfg(test)]
+            println!("needle beginning: h: {}, h_i {}", h, h_i);
+            let remaining_haystack = haystack.len() - h_i;
+            let remaining_needle = needle.len() - n_i - 1;
+
+            if remaining_needle > remaining_haystack {
+                #[cfg(test)]
+                println!(
+                    "Needle len {} is longer than remaining haystack {} ({}, {}) -> false",
+                    remaining_needle,
+                    remaining_haystack,
+                    haystack.len(),
+                    h_i
+                );
+                return false;
+            }
+
+            let n = needle.get(n_i..n_i + 1).unwrap();
+            if n != h {
+                #[cfg(test)]
+                println!("Continue haystack n: {}, h:{}", n, h);
+                h_i = h_i - n_i + 1; //h_i - n_i = current letter, +1 => next letter
+                continue 'haystack;
+            }
+            #[cfg(test)]
+            println!(
+                "n==h: Current n: {}, n_peek is: {:?}",
+                n,
+                needle.get(n_i + 1..n_i + 2)
+            );
+            if remaining_needle == 0 {
+                #[cfg(test)]
+                println!("found needle {} in haystack {}!", needle, haystack);
+                #[cfg(test)]
+                println!("***************************************");
+                return true;
+            }
+
+            match haystack.get(h_i + 1..h_i + 2) {
+                Some(temp_h) => {
+                    #[cfg(test)]
+                    println!("Continuing needle");
+                    h_i += 1;
+                    h = temp_h;
+                    n_i += 1;
+                }
+                None => {
+                    if needle.get(n_i + 1..n_i + 2).is_some() {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[test]
@@ -329,7 +411,7 @@ fn find_missing_morse_test() {
         map.insert(p, Vec::<&String>::new());
     }
 
-    let missing_perms = find_missing_morse_fast(&map, 3);
+    let missing_perms = find_missing_morse2(&map, 3);
     assert!(
         missing_perms.contains(&String::from("...")),
         "'...' is found?"
@@ -344,4 +426,33 @@ fn find_missing_morse_test() {
         "More elements than expected {:?}",
         missing_perms
     );
+}
+
+#[test]
+fn contains_test() {
+    vec![
+        ("a", "a"),
+        ("test", "te"),
+        ("test", "es"),
+        ("test", "st"),
+        ("test", "test"),
+        ("", ""),
+        ("", "a"),
+        ("a", ""),
+        ("a", "b"),
+        ("test", "abc"),
+        ("test", "testtest"),
+        ("abcabcd", "abcd"),
+        ("-.-.---.------..-...-.--.", "-.---.------."),
+    ]
+    .iter()
+    .for_each(|(haystack, needle)| {
+        assert_eq!(
+            haystack.contains(needle),
+            contains(haystack, needle),
+            "Wrong result for {} in {}",
+            needle,
+            haystack
+        );
+    });
 }
