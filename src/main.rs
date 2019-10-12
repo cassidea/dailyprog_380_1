@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::path;
+use std::time;
 
 const INPUT_FILE: &str = "enable1.txt";
 
@@ -18,10 +19,14 @@ fn main() {
     let tokens = read_tokens(INPUT_FILE).unwrap();
     println!("Number of tokens {}", tokens.len());
 
+    let start = time::Instant::now();
+
     let map = tokens
         .iter()
-        .zip(tokens.iter().map(|w| morse::to_morse(w)))
-        .collect::<HashMap<&String, String>>();
+        .fold(HashMap::<&String, String>::new(), |mut acc, w| {
+            acc.insert(w, morse::to_morse(w));
+            acc
+        });
 
     let reversed_map = map
         .iter()
@@ -30,40 +35,69 @@ fn main() {
             acc
         });
 
+    let start_challenges = time::Instant::now();
+    println!(
+        "Created maps in {:?}",
+        start_challenges.duration_since(start)
+    );
+
+    let start_challenge1 = time::Instant::now();
     match challenges::challenge1(&reversed_map) {
         None => println!("Nothing found for challenge 1"),
         Some(morse) => println!(
-            "Found {} -> {:?} for challenge 1",
+            "Found {} -> {:?} for challenge 1 in {:?}",
             morse,
-            reversed_map.get(morse).unwrap()
+            reversed_map.get(morse).unwrap(),
+            start_challenge1.elapsed()
         ),
     };
 
+    let start_challenge2 = time::Instant::now();
     match challenges::challenge2(&reversed_map) {
         None => println!("Nothing found for challenge 2"),
         Some(morse) => println!(
-            "Found {} -> {:?} for challenge 2",
+            "Found {} -> {:?} for challenge 2 in {:?}",
             morse,
-            reversed_map.get(morse).unwrap()
+            reversed_map.get(morse).unwrap(),
+            start_challenge2.elapsed()
         ),
     };
 
+    let start_challenge3 = time::Instant::now();
     match challenges::challenge3(&map) {
         None => println!("Nothing found for challenge 3"),
-        Some((word, morse)) => println!("Found {} -> {} for challenge 3", word, morse),
+        Some((word, morse)) => println!(
+            "Found {} -> {} for challenge 3 in {:?}",
+            word,
+            morse,
+            start_challenge3.elapsed()
+        ),
     };
 
+    let start_challenge4 = time::Instant::now();
     match challenge4(&map) {
         None => println!("Nothing found for challenge 4"),
-        Some((word, morse)) => println!("Found {} -> {} for challenge 4", word, morse),
+        Some((word, morse)) => println!(
+            "Found {} -> {} for challenge 4 in {:?}",
+            word,
+            morse,
+            start_challenge4.elapsed()
+        ),
     };
 
+    let start_challenge5 = time::Instant::now();
     let c5 = challenge5(&reversed_map);
     if c5.len() == 4 {
         println!("Missing sequences for challenge 5 are: {:?}", c5);
     } else {
         println!("Found {} missing sequences", c5.len());
     }
+    println!("Challenge 5 took {:?}", start_challenge5.elapsed());
+
+    println!(
+        "Finished all challenges in {:?}",
+        start_challenges.elapsed()
+    );
 }
 
 fn read_tokens(file: &str) -> Result<Vec<String>, io::Error> {
