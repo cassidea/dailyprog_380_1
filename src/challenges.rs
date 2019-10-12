@@ -214,22 +214,25 @@ fn get_permutations(limit: u32, to_be_ignored: Vec<String>) -> Vec<String> {
     result
 }
 
-fn contains(haystack: &str, needle: &str) -> bool {
+fn contains(haystack_str: &str, needle_str: &str) -> bool {
     #[cfg(test)]
-    println!("Searching {} in {}", needle, haystack);
+    println!("Searching {} in {}", needle_str, haystack_str);
 
-    if needle.len() == 0 {
+    if needle_str.len() == 0 {
         return true;
     }
 
-    if haystack.len() == 0 {
+    if haystack_str.len() == 0 {
         return false;
     }
+
+    let haystack = haystack_str.as_bytes();
+    let needle = needle_str.as_bytes();
 
     let mut h_i = 0;
     let mut h;
     'haystack: loop {
-        match haystack.get(h_i..h_i + 1) {
+        match get(haystack, h_i) {
             Some(x) => (h = x),
             None => return false,
         };
@@ -255,7 +258,7 @@ fn contains(haystack: &str, needle: &str) -> bool {
                 return false;
             }
 
-            let n = needle.get(n_i..n_i + 1).unwrap();
+            let n = get(needle, n_i).unwrap();
             if n != h {
                 #[cfg(test)]
                 println!("Continue haystack n: {}, h:{}", n, h);
@@ -266,17 +269,17 @@ fn contains(haystack: &str, needle: &str) -> bool {
             println!(
                 "n==h: Current n: {}, n_peek is: {:?}",
                 n,
-                needle.get(n_i + 1..n_i + 2)
+                get(needle, (n_i + 1))
             );
             if remaining_needle == 0 {
                 #[cfg(test)]
-                println!("found needle {} in haystack {}!", needle, haystack);
+                println!("found needle {} in haystack {}!", needle_str, haystack_str);
                 #[cfg(test)]
                 println!("***************************************");
                 return true;
             }
 
-            match haystack.get(h_i + 1..h_i + 2) {
+            match get(haystack, (h_i + 1)) {
                 Some(temp_h) => {
                     #[cfg(test)]
                     println!("Continuing needle");
@@ -285,13 +288,17 @@ fn contains(haystack: &str, needle: &str) -> bool {
                     n_i += 1;
                 }
                 None => {
-                    if needle.get(n_i + 1..n_i + 2).is_some() {
+                    if get(needle, (n_i + 1)).is_some() {
                         return false;
                     }
                 }
             }
         }
     }
+}
+
+fn get<'a>(haystack: &'a [u8], i: usize) -> Option<&'a u8> {
+    haystack.get(i)
 }
 
 #[test]
