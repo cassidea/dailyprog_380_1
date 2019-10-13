@@ -166,7 +166,7 @@ fn find_missing_morse2<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) 
 
     perms.retain(|p| {
         for k in map.keys() {
-            if contains(k, p) {
+            if contains_short(k, p) {
                 return false;
             }
         }
@@ -214,6 +214,7 @@ fn get_permutations(limit: u32, to_be_ignored: Vec<String>) -> Vec<String> {
     result
 }
 
+#[allow(dead_code)]
 fn contains(haystack_str: &str, needle_str: &str) -> bool {
     #[cfg(test)]
     println!("Searching {} in {}", needle_str, haystack_str);
@@ -228,6 +229,8 @@ fn contains(haystack_str: &str, needle_str: &str) -> bool {
 
     let haystack = haystack_str.as_bytes();
     let needle = needle_str.as_bytes();
+
+    println!("haystack_bytes {:?} needle_bytes {:?}", haystack, needle);
 
     let mut h_i = 0;
     let mut h;
@@ -269,7 +272,7 @@ fn contains(haystack_str: &str, needle_str: &str) -> bool {
             println!(
                 "n==h: Current n: {}, n_peek is: {:?}",
                 n,
-                get(needle, (n_i + 1))
+                get(needle, n_i + 1)
             );
             if remaining_needle == 0 {
                 #[cfg(test)]
@@ -279,7 +282,7 @@ fn contains(haystack_str: &str, needle_str: &str) -> bool {
                 return true;
             }
 
-            match get(haystack, (h_i + 1)) {
+            match get(haystack, h_i + 1) {
                 Some(temp_h) => {
                     #[cfg(test)]
                     println!("Continuing needle");
@@ -288,7 +291,7 @@ fn contains(haystack_str: &str, needle_str: &str) -> bool {
                     n_i += 1;
                 }
                 None => {
-                    if get(needle, (n_i + 1)).is_some() {
+                    if get(needle, n_i + 1).is_some() {
                         return false;
                     }
                 }
@@ -297,8 +300,38 @@ fn contains(haystack_str: &str, needle_str: &str) -> bool {
     }
 }
 
+#[allow(dead_code)]
 fn get<'a>(haystack: &'a [u8], i: usize) -> Option<&'a u8> {
     haystack.get(i)
+}
+
+fn contains_short(haystack_str: &str, needle_str: &str) -> bool {
+    #[cfg(test)]
+    println!("Searching {} in {}", needle_str, haystack_str);
+
+    if needle_str.len() == 0 {
+        return true;
+    }
+
+    if haystack_str.len() == 0 || haystack_str.len() < needle_str.len() {
+        return false;
+    }
+
+    let haystack = haystack_str.as_bytes();
+    let needle = needle_str.as_bytes();
+
+    for i in 0..haystack.len() - needle.len() + 1 {
+        #[cfg(test)]
+        println!("{:?}.starts_with({:?})", &haystack[1..], needle);
+        let current_haystack = &haystack[i..];
+        if current_haystack.len() < needle.len() {
+            return false;
+        }
+        if current_haystack.starts_with(needle) {
+            return true;
+        }
+    }
+    false
 }
 
 #[test]
@@ -457,6 +490,35 @@ fn contains_test() {
         assert_eq!(
             haystack.contains(needle),
             contains(haystack, needle),
+            "Wrong result for {} in {}",
+            needle,
+            haystack
+        );
+    });
+}
+
+#[test]
+fn contains_short_test() {
+    vec![
+        ("a", "a"),
+        ("test", "te"),
+        ("test", "es"),
+        ("test", "st"),
+        ("test", "test"),
+        ("", ""),
+        ("", "a"),
+        ("a", ""),
+        ("a", "b"),
+        ("test", "abc"),
+        ("test", "testtest"),
+        ("abcabcd", "abcd"),
+        ("-.-.---.------..-...-.--.", "-.---.------."),
+    ]
+    .iter()
+    .for_each(|(haystack, needle)| {
+        assert_eq!(
+            haystack.contains(needle),
+            contains_short(haystack, needle),
             "Wrong result for {} in {}",
             needle,
             haystack
