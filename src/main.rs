@@ -31,7 +31,7 @@ fn main() {
     let reversed_map = map
         .iter()
         .fold(HashMap::<&String, Vec<&String>>::new(), |mut acc, x| {
-            acc.entry(x.1).or_insert(Vec::new()).push(x.0);
+            acc.entry(x.1).or_insert_with(Vec::new).push(x.0);
             acc
         });
 

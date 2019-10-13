@@ -37,7 +37,7 @@ lazy_static! {
 pub fn to_morse(org_string: &str) -> String {
     org_string
         .chars()
-        .map(|c| to_single_morse(c))
+        .map(to_single_morse)
         .collect::<Vec<&str>>()
         .join("")
 }

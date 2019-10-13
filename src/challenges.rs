@@ -59,7 +59,7 @@ pub fn challenge3<'a>(map: &'a HashMap<&String, String>) -> Option<(&'a String, 
     let result = find_balanced_words(map, 21);
     match result.len() {
         2 => {
-            if *(result.get(0).unwrap().0) == String::from("counterdemonstrations") {
+            if &result.get(0).unwrap().0[..] == "counterdemonstrations" {
                 result.get(1).cloned()
             } else {
                 result.get(0).cloned()
@@ -219,11 +219,11 @@ fn contains(haystack_str: &str, needle_str: &str) -> bool {
     #[cfg(test)]
     println!("Searching {} in {}", needle_str, haystack_str);
 
-    if needle_str.len() == 0 {
+    if needle_str.is_empty() {
         return true;
     }
 
-    if haystack_str.len() == 0 {
+    if haystack_str.is_empty() {
         return false;
     }
 
@@ -243,7 +243,8 @@ fn contains(haystack_str: &str, needle_str: &str) -> bool {
         #[cfg(test)]
         println!("haystack beginning: h: {}, h_i {}", h, h_i);
         let mut n_i = 0;
-        'needle: loop {
+        /*'needle:*/
+        loop {
             #[cfg(test)]
             println!("needle beginning: h: {}, h_i {}", h, h_i);
             let remaining_haystack = haystack.len() - h_i;
@@ -301,7 +302,7 @@ fn contains(haystack_str: &str, needle_str: &str) -> bool {
 }
 
 #[allow(dead_code)]
-fn get<'a>(haystack: &'a [u8], i: usize) -> Option<&'a u8> {
+fn get(haystack: &[u8], i: usize) -> Option<&u8> {
     haystack.get(i)
 }
 
@@ -309,18 +310,18 @@ fn contains_short(haystack_str: &str, needle_str: &str) -> bool {
     #[cfg(test)]
     println!("Searching {} in {}", needle_str, haystack_str);
 
-    if needle_str.len() == 0 {
+    if needle_str.is_empty() {
         return true;
     }
 
-    if haystack_str.len() == 0 || haystack_str.len() < needle_str.len() {
+    if haystack_str.is_empty() || haystack_str.len() < needle_str.len() {
         return false;
     }
 
     let haystack = haystack_str.as_bytes();
     let needle = needle_str.as_bytes();
 
-    for i in 0..haystack.len() - needle.len() + 1 {
+    for i in 0..=haystack.len() - needle.len() {
         #[cfg(test)]
         println!("{:?}.starts_with({:?})", &haystack[1..], needle);
         let current_haystack = &haystack[i..];
