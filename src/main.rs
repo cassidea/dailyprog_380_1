@@ -3,7 +3,6 @@ extern crate lazy_static;
 mod challenges;
 mod morse;
 
-use crate::challenges::{challenge4, challenge5};
 use std::collections::HashMap;
 use std::fs;
 use std::io;
@@ -75,7 +74,7 @@ fn main() {
     };
 
     let start_challenge4 = time::Instant::now();
-    match challenge4(&map) {
+    match challenges::challenge4(&map) {
         None => println!("Nothing found for challenge 4"),
         Some((word, morse)) => println!(
             "Found {} -> {} for challenge 4 in {:?}",
@@ -85,19 +84,46 @@ fn main() {
         ),
     };
 
-    let start_challenge5 = time::Instant::now();
-    let c5 = challenge5(&reversed_map);
-    if c5.len() == 4 {
-        println!("Missing sequences for challenge 5 are: {:?}", c5);
-    } else {
-        println!("Found {} missing sequences e.g. {:?}", c5.len(), c5);
-        for k in reversed_map.keys() {
-            if k.contains("-.---.------.") {
-                println!("{} has not been found!", k);
+    for (func_name, func) in vec![
+        (
+            "challenge5_contains",
+            challenges::challenge5_contains as fn(&HashMap<&String, Vec<&String>>) -> Vec<String>,
+        ),
+        (
+            "challenge5_contains_startswith",
+            challenges::challenge5_contains_startswith,
+        ),
+        (
+            "challenge5_contains_by_hand",
+            challenges::challenge5_contains_by_hand,
+        ),
+        (
+            "challenge5_contains_java",
+            challenges::challenge5_contains_java,
+        ),
+        (
+            "challenge5_contains_memcmp",
+            challenges::challenge5_contains_memcmp,
+        ),
+    ] {
+        let start_challenge5 = time::Instant::now();
+        let c5 = func(&reversed_map);
+        if c5.len() == 4 {
+            println!("Missing sequences for challenge 5 are: {:?}", c5);
+        } else {
+            println!("Found {} missing sequences e.g. {:?}", c5.len(), c5);
+            for k in reversed_map.keys() {
+                if k.contains("-.---.------.") {
+                    println!("{} has not been found!", k);
+                }
             }
         }
+        println!(
+            "Challenge 5 {} took {:?}",
+            func_name,
+            start_challenge5.elapsed()
+        );
     }
-    println!("Challenge 5 took {:?}", start_challenge5.elapsed());
 
     println!(
         "Finished all challenges in {:?}",

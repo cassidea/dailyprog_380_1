@@ -1,3 +1,4 @@
+use libc;
 use std::collections::HashMap;
 
 // The sequence -...-....-.--. is the code for four different words (needing, nervate, niding, tiling).
@@ -135,64 +136,42 @@ fn find_palindrome<'a>(
 
 // --.---.---.-- is one of five 13-character sequences that does not appear in the encoding
 // of any word. Find the other four.
-pub fn challenge5<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
-    find_missing_morse2(map, 13)
+pub fn challenge5_contains<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
+    find_missing_morse(map, 13, self::contains_in_rust)
+}
+
+pub fn challenge5_contains_startswith<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
+    find_missing_morse(map, 13, self::contains_starts_with)
+}
+
+pub fn challenge5_contains_by_hand<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
+    find_missing_morse(map, 13, self::contains_by_hand)
+}
+
+pub fn challenge5_contains_java<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
+    find_missing_morse(map, 13, self::contains_java)
+}
+
+pub fn challenge5_contains_memcmp<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
+    find_missing_morse(map, 13, self::contains_memcmp)
 }
 
 #[allow(dead_code)]
-fn find_missing_morse1<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) -> Vec<String> {
-    let perms = get_permutations(limit, vec!["--.---.---.--".to_string()]);
-    println!("Got {} permutations", perms.len());
-    let mut result = perms.clone();
-
-    let keys = map
-        .keys()
-        .filter(|k| k.len() >= limit as usize)
-        .collect::<Vec<_>>();
-    println!("Found {} keys to check", keys.len());
-    for (i, p) in perms.iter().enumerate().rev() {
-        for k in keys.iter() {
-            if k.contains(p) {
-                result.remove(i);
-                break;
-            }
-        }
-    }
-    result
-}
-
-fn find_missing_morse2<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) -> Vec<String> {
+fn find_missing_morse<'a>(
+    map: &'a HashMap<&String, Vec<&String>>,
+    limit: u32,
+    func: fn(&str, &str) -> bool,
+) -> Vec<String> {
     let mut perms = get_permutations(limit, vec!["--.---.---.--".to_string()]);
-
     perms.retain(|p| {
         for k in map.keys() {
-            if contains_short(k, p) {
+            if func(k, p) {
                 return false;
             }
         }
         true
     });
     perms
-}
-
-#[allow(dead_code)]
-fn find_missing_morse3<'a>(map: &'a HashMap<&String, Vec<&String>>, limit: u32) -> Vec<String> {
-    let perms = get_permutations(limit, vec!["--.---.---.--".to_string()]);
-    let mut result = Vec::<String>::new();
-
-    for p in perms.iter() {
-        let mut found = false;
-        for k in map.keys() {
-            if k.contains(p) {
-                found = true;
-                break;
-            }
-        }
-        if !found {
-            result.push(p.clone());
-        }
-    }
-    result
 }
 
 fn get_permutations(limit: u32, to_be_ignored: Vec<String>) -> Vec<String> {
@@ -215,7 +194,7 @@ fn get_permutations(limit: u32, to_be_ignored: Vec<String>) -> Vec<String> {
 }
 
 #[allow(dead_code)]
-fn contains(haystack_str: &str, needle_str: &str) -> bool {
+fn contains_by_hand(haystack_str: &str, needle_str: &str) -> bool {
     #[cfg(test)]
     println!("Searching {} in {}", needle_str, haystack_str);
 
@@ -230,6 +209,7 @@ fn contains(haystack_str: &str, needle_str: &str) -> bool {
     let haystack = haystack_str.as_bytes();
     let needle = needle_str.as_bytes();
 
+    #[cfg(test)]
     println!("haystack_bytes {:?} needle_bytes {:?}", haystack, needle);
 
     let mut h_i = 0;
@@ -306,7 +286,7 @@ fn get(haystack: &[u8], i: usize) -> Option<&u8> {
     haystack.get(i)
 }
 
-fn contains_short(haystack_str: &str, needle_str: &str) -> bool {
+fn contains_starts_with(haystack_str: &str, needle_str: &str) -> bool {
     #[cfg(test)]
     println!("Searching {} in {}", needle_str, haystack_str);
 
@@ -333,6 +313,113 @@ fn contains_short(haystack_str: &str, needle_str: &str) -> bool {
         }
     }
     false
+}
+
+fn contains_memcmp(haystack_str: &str, needle_str: &str) -> bool {
+    #[cfg(test)]
+    println!("Searching {} in {}", needle_str, haystack_str);
+
+    if needle_str.is_empty() {
+        return true;
+    }
+
+    if haystack_str.is_empty() || haystack_str.len() < needle_str.len() {
+        return false;
+    }
+
+    let haystack = haystack_str.as_bytes();
+    let needle = needle_str.as_bytes();
+
+    for i in 0..=haystack.len() - needle.len() {
+        #[cfg(test)]
+        println!("{:?}.starts_with({:?})", &haystack[1..], needle);
+        let current_haystack = &haystack[i..i + needle.len()];
+        if current_haystack.len() < needle.len() {
+            return false;
+        }
+        if memcmp_eq(current_haystack, needle) {
+            return true;
+        }
+    }
+    false
+}
+
+fn memcmp_eq<'a, T: PartialEq>(a: &'a [T], b: &'a [T]) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+
+    unsafe { libc::memcmp(a.as_ptr() as *const _, b.as_ptr() as *const _, a.len()) == 0 }
+}
+
+fn contains_java(haystack: &str, needle: &str) -> bool {
+    #[cfg(test)]
+    println!("Searching {} in {}", needle, haystack);
+    return index_of(
+        haystack.as_bytes(),
+        0,
+        haystack.len() as isize,
+        needle.as_bytes(),
+        0,
+        needle.len(),
+        0,
+    ) > -1;
+}
+
+fn index_of(
+    source: &[u8],
+    source_offset: isize,
+    source_count: isize,
+    target: &[u8],
+    target_offset: usize,
+    target_count: usize,
+    from_index: isize,
+) -> isize {
+    if from_index >= source_count {
+        match target_count {
+            0 => return source_count,
+            _ => return -1,
+        };
+    }
+
+    if target_count == 0 {
+        return from_index;
+    }
+
+    let first = target[target_offset];
+    #[cfg(test)]
+    println!("{} + {} - {}", source_offset, source_count, target_count);
+    let max = source_offset + (source_count - target_count as isize);
+
+    for mut i in source_offset + from_index..=max {
+        let mut ui = i as usize;
+        /* Look for first character. */
+        if source[ui] != first {
+            ui += 1;
+            while ui <= max as usize && source[ui] != first {
+                ui += 1;
+            }
+        }
+
+        i = ui as isize;
+        if i <= max {
+            /* Found first character, now look at the rest of v2 */
+            let mut j = ui + 1;
+            let end = j + target_count - 1;
+            let mut k = target_offset + 1;
+            while j < end && source[j] == target[k] {
+                j += 1;
+                k += 1;
+            }
+
+            if j == end {
+                /* Found whole string. */
+                return i - source_offset;
+            }
+        }
+    }
+
+    return -1;
 }
 
 #[test]
@@ -452,54 +539,74 @@ fn find_missing_morse_test() {
         map.insert(p, Vec::<&String>::new());
     }
 
-    let missing_perms = find_missing_morse2(&map, 3);
-    assert!(
-        missing_perms.contains(&String::from("...")),
-        "'...' is found?"
-    );
-    assert!(
-        missing_perms.contains(&String::from("---")),
-        "'---' is found?"
-    );
-    assert_eq!(
-        2,
-        missing_perms.len(),
-        "More elements than expected {:?}",
-        missing_perms
-    );
-}
+    for t in "test".as_bytes() {}
 
-#[test]
-fn contains_test() {
-    vec![
-        ("a", "a"),
-        ("test", "te"),
-        ("test", "es"),
-        ("test", "st"),
-        ("test", "test"),
-        ("", ""),
-        ("", "a"),
-        ("a", ""),
-        ("a", "b"),
-        ("test", "abc"),
-        ("test", "testtest"),
-        ("abcabcd", "abcd"),
-        ("-.-.---.------..-...-.--.", "-.---.------."),
-    ]
-    .iter()
-    .for_each(|(haystack, needle)| {
-        assert_eq!(
-            haystack.contains(needle),
-            contains(haystack, needle),
-            "Wrong result for {} in {}",
-            needle,
-            haystack
+    for (func_name, func) in vec![
+        (
+            "contains_in_rust",
+            self::contains_in_rust as fn(haystack: &str, needle: &str) -> bool,
+        ),
+        ("contains_starts_with", self::contains_starts_with),
+        ("contains_by_hand", self::contains_by_hand),
+        ("contains_java", self::contains_java),
+        ("contains_memcmp", self::contains_memcmp),
+    ] {
+        #[cfg(test)]
+        println!("Testing {}", func_name);
+        let missing_perms = find_missing_morse(&map, 3, func);
+        assert!(
+            missing_perms.contains(&String::from("...")),
+            "'...' is found?"
         );
-    });
+        assert!(
+            missing_perms.contains(&String::from("---")),
+            "'---' is found?"
+        );
+        assert_eq!(
+            2,
+            missing_perms.len(),
+            "More elements than expected {:?}",
+            missing_perms
+        );
+    }
 }
 
 #[test]
-fn contains_short_test() {
+fn contains_in_rust_test() {
+    println!("Testing contains_in_rust()");
+    contains_abstract_test(self::contains_in_rust);
+}
+
+fn contains_in_rust(haystack: &str, needle: &str) -> bool {
+    haystack.contains(needle)
+}
+
+#[test]
+fn contains_starts_with_test() {
+    println!("Testing contains_starts_with()");
+    contains_abstract_test(self::contains_starts_with);
+}
+
+#[test]
+fn contains_by_hand_test() {
+    println!("Testing contains_by_hand()");
+    contains_abstract_test(self::contains_by_hand);
+}
+
+#[test]
+fn contains_java_test() {
+    println!("Testing contains_in_java()");
+    contains_abstract_test(self::contains_java);
+}
+
+#[test]
+fn contains_memcmp_test() {
+    println!("Testing contains_in_java()");
+    contains_abstract_test(self::contains_memcmp);
+}
+
+#[cfg(test)]
+fn contains_abstract_test(func: fn(&str, &str) -> bool) {
     vec![
         ("a", "a"),
         ("test", "te"),
@@ -519,7 +626,7 @@ fn contains_short_test() {
     .for_each(|(haystack, needle)| {
         assert_eq!(
             haystack.contains(needle),
-            contains_short(haystack, needle),
+            func(haystack, needle),
             "Wrong result for {} in {}",
             needle,
             haystack
