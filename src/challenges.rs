@@ -136,47 +136,46 @@ fn find_palindrome<'a>(
 
 // --.---.---.-- is one of five 13-character sequences that does not appear in the encoding
 // of any word. Find the other four.
-pub fn challenge5_contains<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
-    find_missing_morse(map, 13, self::contains_in_rust)
+pub fn challenge5_contains(words: &Vec<&&String>) -> Vec<String> {
+    find_missing_morse(words, 13, self::contains_in_rust)
 }
 
-pub fn challenge5_contains_startswith<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
-    find_missing_morse(map, 13, self::contains_starts_with)
+pub fn challenge5_contains_startswith(words: &Vec<&&String>) -> Vec<String> {
+    find_missing_morse(words, 13, self::contains_starts_with)
 }
 
-pub fn challenge5_contains_by_hand<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
-    find_missing_morse(map, 13, self::contains_by_hand)
+pub fn challenge5_contains_by_hand<'a>(words: &Vec<&&String>) -> Vec<String> {
+    find_missing_morse(words, 13, self::contains_by_hand)
 }
 
-pub fn challenge5_contains_java<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
-    find_missing_morse(map, 13, self::contains_java)
+pub fn challenge5_contains_java(words: &Vec<&&String>) -> Vec<String> {
+    find_missing_morse(words, 13, self::contains_java)
 }
 
-pub fn challenge5_contains_memcmp<'a>(map: &'a HashMap<&String, Vec<&String>>) -> Vec<String> {
-    find_missing_morse(map, 13, self::contains_memcmp)
+pub fn challenge5_contains_memcmp(words: &Vec<&&String>) -> Vec<String> {
+    find_missing_morse(words, 13, self::contains_memcmp)
+}
+pub fn challenge5_contains_13_chars_hardcoded(map: &Vec<&&String>) -> Vec<String> {
+    find_missing_morse(map, 13, self::contains_13_chars_hardcoded)
 }
 
 #[allow(dead_code)]
 fn find_missing_morse<'a>(
-    map: &'a HashMap<&String, Vec<&String>>,
+    words: &'a Vec<&&String>,
     limit: u32,
     func: fn(&str, &str) -> bool,
 ) -> Vec<String> {
-    let mut perms = get_permutations(limit, vec!["--.---.---.--".to_string()]);
-    perms.retain(|p| {
-        for k in map.keys() {
-            if func(k, p) {
-                return false;
-            }
-        }
-        true
-    });
-    perms
+    get_permutations(limit, words, func, vec!["--.---.---.--".to_string()])
 }
 
-fn get_permutations(limit: u32, to_be_ignored: Vec<String>) -> Vec<String> {
+fn get_permutations(
+    limit: u32,
+    words: &Vec<&&String>,
+    func: fn(&str, &str) -> bool,
+    to_be_ignored: Vec<String>,
+) -> Vec<String> {
     let mut result = Vec::<String>::new();
-    for i in 0..2_u32.pow(limit) {
+    'morse: for i in 0..2_u32.pow(limit) {
         let s_i = format!("{:width$b}", i, width = limit as usize);
         let morse = s_i
             .chars()
@@ -186,6 +185,13 @@ fn get_permutations(limit: u32, to_be_ignored: Vec<String>) -> Vec<String> {
                 x => panic!("Unknown char {}!", x),
             })
             .collect::<String>();
+
+        for k in words {
+            if func(k, &morse) {
+                continue 'morse;
+            }
+        }
+
         if !to_be_ignored.contains(&morse) {
             result.push(morse);
         }
@@ -202,7 +208,7 @@ fn contains_by_hand(haystack_str: &str, needle_str: &str) -> bool {
         return true;
     }
 
-    if haystack_str.is_empty() {
+    if haystack_str.is_empty() || haystack_str.len() < needle_str.len() {
         return false;
     }
 
@@ -305,9 +311,7 @@ fn contains_starts_with(haystack_str: &str, needle_str: &str) -> bool {
         #[cfg(test)]
         println!("{:?}.starts_with({:?})", &haystack[1..], needle);
         let current_haystack = &haystack[i..];
-        if current_haystack.len() < needle.len() {
-            return false;
-        }
+
         if current_haystack.starts_with(needle) {
             return true;
         }
@@ -332,11 +336,9 @@ fn contains_memcmp(haystack_str: &str, needle_str: &str) -> bool {
 
     for i in 0..=haystack.len() - needle.len() {
         #[cfg(test)]
-        println!("{:?}.starts_with({:?})", &haystack[1..], needle);
+        println!("{:?}.memcmp_eq({:?})", &haystack[1..], needle);
         let current_haystack = &haystack[i..i + needle.len()];
-        if current_haystack.len() < needle.len() {
-            return false;
-        }
+
         if memcmp_eq(current_haystack, needle) {
             return true;
         }
@@ -422,6 +424,107 @@ fn index_of(
     return -1;
 }
 
+#[rustfmt::skip]
+fn contains_13_chars_hardcoded(haystack_str: &str, needle_str: &str) -> bool {
+    #[cfg(test)]
+    println!("Searching {} in {}", needle_str, haystack_str);
+
+    if needle_str.is_empty() {
+        return true;
+    }
+
+    if haystack_str.is_empty() || haystack_str.len() < needle_str.len() {
+        return false;
+    }
+    
+    let haystack = haystack_str.as_bytes();
+    let needle = needle_str.as_bytes();
+
+    for i in 0..=haystack.len() - needle.len() {
+        let current_haystack = &haystack[i..];
+        let haystack_len = current_haystack.len();
+        #[cfg(test)]
+        println!("{:?}.contains({:?})", current_haystack, needle);
+
+        if current_haystack[0] == needle[0] {            
+            if haystack_len > 1 && needle.len() > 1 {
+                if current_haystack[1] == needle[1] {
+                    if haystack_len > 2 && needle.len() > 2 {
+                        if current_haystack[2] == needle[2] {
+                            if haystack_len > 3 && needle.len() > 3 {
+                                if current_haystack[3] == needle[3] {
+                                    if haystack_len > 4 && needle.len() > 4 {
+                                        if current_haystack[4] == needle[4] {
+                                            if haystack_len > 5 && needle.len() > 5 {
+                                                if current_haystack[5] == needle[5] {
+                                                    if haystack_len > 6 && needle.len() > 6 {
+                                                        if current_haystack[6] == needle[6] {
+                                                            if haystack_len > 7 && needle.len() > 7 {
+                                                                if current_haystack[7] == needle[7] {
+                                                                    if haystack_len > 8 && needle.len() > 8 {
+                                                                        if current_haystack[8] == needle[8] {
+                                                                            if haystack_len > 9 && needle.len() > 9 {
+                                                                                if current_haystack[9] == needle[9] {
+                                                                                    if haystack_len > 10 && needle.len() > 10 {
+                                                                                        if current_haystack[10] == needle[10] {
+                                                                                            if haystack_len > 11 && needle.len() > 11 {
+                                                                                                if current_haystack[11] == needle[11] {
+                                                                                                    if haystack_len > 12 && needle.len() > 12 {
+                                                                                                        if current_haystack[12] == needle[12] {
+                                                                                                            return true;
+                                                                                                        }
+                                                                                                    } else {
+                                                                                                        return true;
+                                                                                                    }
+                                                                                                }
+                                                                                            } else {
+                                                                                                return true;
+                                                                                            }
+                                                                                        }
+                                                                                    } else {
+                                                                                        return true;
+                                                                                    }
+                                                                                }
+                                                                            } else {
+                                                                                return true;
+                                                                            }
+                                                                        }
+                                                                    } else {
+                                                                        return true;
+                                                                    }
+                                                                }
+                                                            } else {
+                                                                return true;
+                                                            }
+                                                        }
+                                                    } else {
+                                                        return true;
+                                                    }
+                                                }
+                                            } else {
+                                                return true;
+                                            }
+                                        }
+                                    } else {
+                                        return true;
+                                    }
+                                }
+                            } else {
+                                return true;
+                            }
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+            } else {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 #[test]
 fn find_by_length_test() {
     let mut map = HashMap::new();
@@ -504,7 +607,12 @@ fn get_permutations_test() {
     let test_perms = ["...", "-..", ".-.", "..-", "--.", "-.-", ".--", "---"];
     assert_eq!(total as usize, test_perms.len());
 
-    let perms = get_permutations(limit, Vec::<String>::new());
+    let perms = get_permutations(
+        limit,
+        &vec![&&String::from("")],
+        |_x, _y| false,
+        Vec::<String>::new(),
+    );
     for p in test_perms.iter() {
         assert!(
             perms.contains(&p.to_string()),
@@ -520,26 +628,24 @@ fn get_permutations_test2() {
     let limit: u32 = 13;
     let total: u32 = 2_u32.pow(limit);
 
-    let perms = get_permutations(limit, Vec::<String>::new());
+    let perms = get_permutations(
+        limit,
+        &vec![&&String::from("")],
+        |_x, _y| false,
+        Vec::<String>::new(),
+    );
     assert_eq!(total as usize, perms.len());
 }
 
 #[test]
 fn find_missing_morse_test() {
-    let test_perms = [
-        String::from("-..--"),
-        String::from(".-.--"),
-        String::from("..--."),
-        String::from("--.--"),
-        String::from("-.-.."),
-        String::from(".--.."),
-    ];
-    let mut map = HashMap::new();
-    for p in test_perms.iter() {
-        map.insert(p, Vec::<&String>::new());
-    }
-
-    for t in "test".as_bytes() {}
+    let m1 = &String::from("-..--");
+    let m2 = &String::from(".-.--");
+    let m3 = &String::from("..--.");
+    let m4 = &String::from("--.--");
+    let m5 = &String::from("-.-..");
+    let m6 = &String::from(".--..");
+    let test_perms = vec![&m1, &m2, &m3, &m4, &m5, &m6];
 
     for (func_name, func) in vec![
         (
@@ -553,7 +659,7 @@ fn find_missing_morse_test() {
     ] {
         #[cfg(test)]
         println!("Testing {}", func_name);
-        let missing_perms = find_missing_morse(&map, 3, func);
+        let missing_perms = find_missing_morse(&test_perms, 3, func);
         assert!(
             missing_perms.contains(&String::from("...")),
             "'...' is found?"
@@ -605,6 +711,12 @@ fn contains_memcmp_test() {
     contains_abstract_test(self::contains_memcmp);
 }
 
+#[test]
+fn contains_13_chars_hardcoded_test() {
+    println!("Testing contains_13_chars_hardcoded()");
+    contains_abstract_test(self::contains_13_chars_hardcoded);
+}
+
 #[cfg(test)]
 fn contains_abstract_test(func: fn(&str, &str) -> bool) {
     vec![
@@ -621,6 +733,8 @@ fn contains_abstract_test(func: fn(&str, &str) -> bool) {
         ("test", "testtest"),
         ("abcabcd", "abcd"),
         ("-.-.---.------..-...-.--.", "-.---.------."),
+        ("-.-.---.------..-...-.--.", "-.-.-.--...-."),
+        ("........---.--.------..-.--.", "--.---.------"),
     ]
     .iter()
     .for_each(|(haystack, needle)| {

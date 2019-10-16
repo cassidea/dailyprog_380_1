@@ -87,7 +87,7 @@ fn main() {
     for (func_name, func) in vec![
         (
             "challenge5_contains",
-            challenges::challenge5_contains as fn(&HashMap<&String, Vec<&String>>) -> Vec<String>,
+            challenges::challenge5_contains as fn(&Vec<&&String>) -> Vec<String>,
         ),
         (
             "challenge5_contains_startswith",
@@ -105,9 +105,13 @@ fn main() {
             "challenge5_contains_memcmp",
             challenges::challenge5_contains_memcmp,
         ),
+        (
+            "challenge5_contains_13_chars_hardcoded",
+            challenges::challenge5_contains_13_chars_hardcoded,
+        ),
     ] {
         let start_challenge5 = time::Instant::now();
-        let c5 = func(&reversed_map);
+        let c5 = func(&reversed_map.keys().collect::<Vec<&&String>>());
         if c5.len() == 4 {
             println!("Missing sequences for challenge 5 are: {:?}", c5);
         } else {
