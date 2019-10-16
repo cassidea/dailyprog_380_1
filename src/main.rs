@@ -110,8 +110,9 @@ fn main() {
             challenges::challenge5_contains_13_chars_hardcoded,
         ),
     ] {
+        let words = reversed_map.keys().collect::<Vec<&&String>>();
         let start_challenge5 = time::Instant::now();
-        let c5 = func(&reversed_map.keys().collect::<Vec<&&String>>());
+        let c5 = func(&words);
         if c5.len() == 4 {
             println!("Missing sequences for challenge 5 are: {:?}", c5);
         } else {
