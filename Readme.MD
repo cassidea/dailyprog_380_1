@@ -1,6 +1,15 @@
 This project is for implementing Challenge 380 of /r/dailyprogrammer
 https://www.reddit.com/r/dailyprogrammer/comments/cmd1hb/20190805_challenge_380_easy_smooshed_morse_code_1/
 
+The initial solution (using Rusts's contains) was much slower than the Java solution from the Reddit thread
+https://gist.github.com/PhilippThaler/ea3e0c867b535980ef09c72fca8724bf
+Therefore several other solutions have been implemented, see challenge5_* in challenges.rs.
+
+This task was meant for learning Rust, which I did. Still I was surprised how slow Rust is in comparing Strings.
+(Or I did horrible mistakes, which is possible, of course!)
+
+Task description:
+
 For the purpose of this challenge, Morse code represents every letter as a sequence of 1-4 characters, each of which is either . (dot) or - (dash). The code for the letter a is .-, for b is -..., etc. The codes for each letter a through z are:
 
 .- -... -.-. -.. . ..-. --. .... .. .--- -.- .-.. -- -. --- .--. --.- .-. ... - ..- ...- .-- -..- -.-- --..
