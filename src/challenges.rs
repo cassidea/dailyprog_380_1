@@ -159,6 +159,10 @@ pub fn challenge5_contains_13_chars_hardcoded(map: &Vec<&&String>) -> Vec<String
     find_missing_morse(map, 13, self::contains_13_chars_hardcoded)
 }
 
+fn contains_in_rust(haystack: &str, needle: &str) -> bool {
+    haystack.contains(needle)
+}
+
 #[allow(dead_code)]
 fn find_missing_morse<'a>(
     words: &'a Vec<&&String>,
@@ -681,10 +685,6 @@ fn find_missing_morse_test() {
 fn contains_in_rust_test() {
     println!("Testing contains_in_rust()");
     contains_abstract_test(self::contains_in_rust);
-}
-
-fn contains_in_rust(haystack: &str, needle: &str) -> bool {
-    haystack.contains(needle)
 }
 
 #[test]
